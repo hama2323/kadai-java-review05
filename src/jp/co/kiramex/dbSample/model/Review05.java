@@ -8,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.PreparedStatement; // ← 修正
 
 public class Review05 {
 
@@ -16,6 +17,7 @@ public class Review05 {
         Connection con = null;
         Statement stmt = null;
         ResultSet rs = null;
+        PreparedStatement pstmt = null; // ← 修正
 
         try {
             // 1. ドライバのクラスをJava上で読み込む
@@ -24,17 +26,20 @@ public class Review05 {
             // 2. DBと接続する
             con = DriverManager.getConnection(
                     "jdbc:mysql://localhost/kadaidb?useSSL=false&allowPublicKeyRetrieval=true", // ←kadaidbデータベースに接続
-                    "root",
-                    "Hk0713196");
+                    "root", "Hk0713196");
 
             // 4. DBとやりとりする窓口（Statementオブジェクト）の作成
             stmt = con.createStatement();
 
             // 5, 6. Select文の実行と結果を格納／代入
-            System.out.print("検索キーワードを入力してください ＞ ");   // personテーブルからidを条件に1件のデータを取得するプログラムを作成
-            String input = keyIn();  //　idはキーボード入力を受け付ける
-            String sql = "SELECT * FROM person WHERE id = '" + input + "'";
-            rs = stmt.executeQuery(sql);
+            System.out.print("検索キーワードを入力してください ＞ "); // personテーブルからidを条件に1件のデータを取得するプログラムを作成
+            String input = keyIn(); // idはキーボード入力を受け付ける
+            String sql = "SELECT * FROM person WHERE id = ?";
+            pstmt = con.prepareStatement(sql);
+
+            pstmt.setString(1, input);
+
+            rs = pstmt.executeQuery();
 
             // 7. 結果を表示する
             while (rs.next()) {
@@ -56,7 +61,7 @@ public class Review05 {
             e.printStackTrace();
         } finally {
             // 8. 接続を閉じる
-            if( rs != null ) {
+            if (rs != null) {
                 try {
                     rs.close();
                 } catch (SQLException e) {
@@ -64,7 +69,7 @@ public class Review05 {
                     e.printStackTrace();
                 }
             }
-            if( stmt != null ){
+            if (stmt != null) {
                 try {
                     stmt.close();
                 } catch (SQLException e) {
@@ -72,14 +77,25 @@ public class Review05 {
                     e.printStackTrace();
                 }
             }
-            if( con != null ){
+            if (con != null) {
                 try {
                     con.close();
                 } catch (SQLException e) {
                     System.err.println("データベース切断時にエラーが発生しました。");
                     e.printStackTrace();
-                }}}
+                }
+                if (pstmt != null) {
+                    try {
+                        pstmt.close();
+                    } catch (SQLException e) {
+                        System.err.println("PreparedStatementを閉じるときにエラーが発生しました。");
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }
+
 
     private static String keyIn() {
         String line = null;
