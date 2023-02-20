@@ -35,9 +35,10 @@ public class Review05 {
             System.out.print("検索キーワードを入力してください ＞ "); // personテーブルからidを条件に1件のデータを取得するプログラムを作成
             String input = keyIn(); // idはキーボード入力を受け付ける
             String sql = "SELECT * FROM person WHERE id = ?";
+
             pstmt = con.prepareStatement(sql);
 
-            pstmt.setString(1, input);
+            pstmt.setInt(1, Integer.parseInt(input));
 
             rs = pstmt.executeQuery();
 
